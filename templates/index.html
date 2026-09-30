@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Heart Disease Prediction</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #222;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 950px;
+            margin: 40px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.10);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 34px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-size: 15px;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .predict-btn {
+            width: 100%;
+            margin-top: 30px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .predict-btn:hover {
+            background: #1d4ed8;
+        }
+
+        {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }           
+
+        .result h2 {
+            margin-bottom: 10px;
+        }
+
+        .result p {
+            margin: 8px 0;
+        }
+
+        .disclaimer {
+            font-size: 13px;
+            margin-top: 15px !important;
+            opacity: 0.8;
+        }
+
+        .probability {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .note {
+            margin-top: 25px;
+            text-align: center;
+            color: #777;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
+
+        .error-message {
+            background-color: #ffe5e5;
+            color: #c62828;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>Heart Disease Prediction</h1>
+
+    <p class="subtitle">
+        Enter the patient's health information to generate a prediction
+    </p>
+
+
+    <form action="/predict" method="POST">
+
+        <div class="form-grid">
+
+            <!-- Age -->
+            <div class="form-group">
+                <label>Age</label>
+                <input
+                    type="number"
+                    name="age"
+                    min="1"
+                    max="120"
+                    placeholder="Enter age"
+                    required>
+            </div>
+
+
+            <!-- Sex -->
+            <div class="form-group">
+                <label>Sex</label>
+
+                <select name="sex" required>
+                    <option value="">Select sex</option>
+                    <option value="0">Female</option>
+                    <option value="1">Male</option>
+                </select>
+            </div>
+
+
+            <!-- Chest Pain -->
+            <div class="form-group">
+                <label>Chest Pain Type</label>
+
+                <select name="cp" required>
+                    <option value="">Select chest pain type</option>
+                    <option value="0">Typical Angina</option>
+                    <option value="1">Atypical Angina</option>
+                    <option value="2">Non-Anginal Pain</option>
+                    <option value="3">Asymptomatic</option>
+                </select>
+            </div>
+
+
+            <!-- Resting BP -->
+            <div class="form-group">
+                <label>Resting Blood Pressure (mm Hg)</label>
+
+                <input
+                    type="number"
+                    name="trestbps"
+                    min="50"
+                    max="250"
+                    placeholder="Example: 130"
+                    required>
+            </div>
+
+
+            <!-- Cholesterol -->
+            <div class="form-group">
+                <label>Cholesterol (mg/dl)</label>
+
+                <input
+                    type="number"
+                    name="chol"
+                    min="50"
+                    max="700"
+                    placeholder="Example: 240"
+                    required>
+            </div>
+
+
+            <!-- Fasting Blood Sugar -->
+            <div class="form-group">
+                <label>Fasting Blood Sugar</label>
+
+                <select name="fbs" required>
+                    <option value="">Select option</option>
+                    <option value="0">Normal (≤ 120 mg/dl)</option>
+                    <option value="1">High (> 120 mg/dl)</option>
+                </select>
+            </div>
+
+
+            <!-- Resting ECG -->
+            <div class="form-group">
+                <label>Resting ECG</label>
+
+                <select name="restecg" required>
+                    <option value="">Select ECG result</option>
+                    <option value="0">Normal</option>
+                    <option value="1">ST-T Wave Abnormality</option>
+                    <option value="2">Left Ventricular Hypertrophy</option>
+                </select>
+            </div>
+
+
+            <!-- Maximum Heart Rate -->
+            <div class="form-group">
+                <label>Maximum Heart Rate</label>
+
+                <input
+                    type="number"
+                    name="thalach"
+                    min="50"
+                    max="250"
+                    placeholder="Example: 150"
+                    required>
+            </div>
+
+
+            <!-- Exercise Angina -->
+            <div class="form-group">
+                <label>Exercise-Induced Angina</label>
+
+                <select name="exang" required>
+                    <option value="">Select option</option>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+
+            <!-- Oldpeak -->
+            <div class="form-group">
+                <label>ST Depression (Oldpeak)</label>
+
+                <input
+                    type="number"
+                    name="oldpeak"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    placeholder="Example: 1.2"
+                    required>
+            </div>
+
+
+            <!-- Slope -->
+            <div class="form-group">
+                <label>ST Segment Slope</label>
+
+                <select name="slope" required>
+                    <option value="">Select slope</option>
+                    <option value="0">Upsloping</option>
+                    <option value="1">Flat</option>
+                    <option value="2">Downsloping</option>
+                </select>
+            </div>
+
+
+            <!-- CA -->
+            <div class="form-group">
+                <label>Number of Major Vessels (CA)</label>
+
+                <select name="ca" required>
+                    <option value="">Select number</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+
+
+            <!-- Thal -->
+            <div class="form-group">
+                <label>Thalassemia (Thal)</label>
+
+                <select name="thal" required>
+                    <option value="">Select result</option>
+                    <option value="0">Normal</option>
+                    <option value="1">Fixed Defect</option>
+                    <option value="2">Reversible Defect</option>
+                    <option value="3">Other</option>
+                </select>
+            </div>
+
+        </div>
+
+
+        <button type="submit" class="predict-btn">
+            Predict Heart Disease
+        </button>
+
+    </form>
+
+
+    {% if prediction %}
+    <div class="result">
+        <h2>Prediction: 
+            {% if prediction == "Heart Disease Detected" %}
+                Positive
+            {% else %}
+                Negative
+            {% endif %}
+        </h2>
+
+        <p>Model Confidence: {{ probability }}%</p>
+
+        <p class="disclaimer">
+            This prediction is generated by a machine learning model
+            for educational and demonstration purposes only.
+        </p>
+    </div>
+{% endif %}
+
+
+    
+</div>
+
+</body>
+
+</html>
